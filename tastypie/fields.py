@@ -31,7 +31,7 @@ class ApiField(object):
     dehydrated_type = 'string'
     help_text = ''
 
-    def __init__(self, attribute=None, default=NOT_PROVIDED, null=False, blank=False, readonly=False, unique=False, help_text=None, use_in='all'):
+    def __init__(self, attribute=None, default=NOT_PROVIDED, null=False, blank=False, readonly=True, unique=False, help_text=None, use_in='all'):
         """
         Sets up the field. This is generally called when the containing
         ``Resource`` is initialized.
@@ -52,7 +52,7 @@ class ApiField(object):
         data may be omitted on the field. Defaults to ``False``.
 
         Optionally accepts a ``readonly``, which indicates whether the field
-        is used during the ``hydrate`` or not. Defaults to ``False``.
+        is used during the ``hydrate`` or not. Defaults to ``True``.
 
         Optionally accepts a ``unique``, which indicates if the field is a
         unique identifier for the object.
@@ -416,7 +416,7 @@ class RelatedField(ApiField):
     self_referential = False
     help_text = 'A related resource. Can be either a URI or set of nested resource data.'
 
-    def __init__(self, to, attribute, related_name=None, default=NOT_PROVIDED, null=False, blank=False, readonly=False, full=False, unique=False, help_text=None, use_in='all', full_list=True, full_detail=True):
+    def __init__(self, to, attribute, related_name=None, default=NOT_PROVIDED, null=False, blank=False, readonly=True, full=False, unique=False, help_text=None, use_in='all', full_list=True, full_detail=True):
         """
         Builds the field and prepares it to access to related data.
 
@@ -437,7 +437,7 @@ class RelatedField(ApiField):
         data may be omitted on the field. Defaults to ``False``.
 
         Optionally accepts a ``readonly``, which indicates whether the field
-        is used during the ``hydrate`` or not. Defaults to ``False``.
+        is used during the ``hydrate`` or not. Defaults to ``True``.
 
         Optionally accepts a ``full``, which indicates how the related
         ``Resource`` will appear post-``dehydrate``. If ``False``, the
@@ -699,7 +699,7 @@ class ToOneField(RelatedField):
     help_text = 'A single related resource. Can be either a URI or set of nested resource data.'
 
     def __init__(self, to, attribute, related_name=None, default=NOT_PROVIDED,
-                 null=False, blank=False, readonly=False, full=False,
+                 null=False, blank=False, readonly=True, full=False,
                  unique=False, help_text=None, use_in='all', full_list=True, full_detail=True):
         super(ToOneField, self).__init__(
             to, attribute, related_name=related_name, default=default,
@@ -777,7 +777,7 @@ class ToManyField(RelatedField):
     help_text = 'Many related resources. Can be either a list of URIs or list of individually nested resource data.'
 
     def __init__(self, to, attribute, related_name=None, default=NOT_PROVIDED,
-                 null=False, blank=False, readonly=False, full=False,
+                 null=False, blank=False, readonly=True, full=False,
                  unique=False, help_text=None, use_in='all', full_list=True, full_detail=True):
         super(ToManyField, self).__init__(
             to, attribute, related_name=related_name, default=default,
