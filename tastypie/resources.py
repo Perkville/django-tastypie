@@ -153,7 +153,8 @@ class DeclarativeMetaclass(type):
 
         if getattr(new_class._meta, 'include_resource_uri', True):
             if not 'resource_uri' in new_class.base_fields:
-                new_class.base_fields['resource_uri'] = fields.CharField(readonly=True)
+                new_class.base_fields['resource_uri'] = fields.CharField(
+                        readonly_post=True, readonly_patch=True)
         elif 'resource_uri' in new_class.base_fields and not 'resource_uri' in attrs:
             del(new_class.base_fields['resource_uri'])
 
@@ -884,7 +885,17 @@ class Resource(six.with_metaclass(DeclarativeMetaclass)):
         bundle = self.hydrate(bundle)
 
         for field_name, field_object in self.fields.items():
-            if field_object.readonly is True:
+
+            # Skip readonly or related fields.
+            if bundle.request.method == 'POST':
+                readonly = field_object.readonly_post
+            elif bundle.request.method == 'PATCH':
+                readonly = field_object.readonly_patch
+            else:
+                raise RuntimeError("full_hydrate() was "
+                        "called on a request that is not POST or PATCH; "
+                        "This should never happen.")
+            if readonly:
                 continue
 
             # Check for an optional method to do further hydration.
@@ -989,7 +1000,8 @@ class Resource(six.with_metaclass(DeclarativeMetaclass)):
                 'type': field_object.dehydrated_type,
                 'nullable': field_object.null,
                 'blank': field_object.blank,
-                'readonly': field_object.readonly,
+                'readonly_post': field_object.readonly_post,
+                'readonly_patch': field_object.readonly_patch,
                 'help_text': field_object.help_text,
                 'unique': field_object.unique,
             }
@@ -1734,7 +1746,8 @@ class ModelDeclarativeMetaclass(DeclarativeMetaclass):
 
         if getattr(new_class._meta, 'include_absolute_url', True):
             if not 'absolute_url' in new_class.base_fields:
-                new_class.base_fields['absolute_url'] = fields.CharField(attribute='get_absolute_url', readonly=True)
+                new_class.base_fields['absolute_url'] = fields.CharField(attribute='get_absolute_url',
+                                                                         readonly_post=True, readonly_patch=True)
         elif 'absolute_url' in new_class.base_fields and not 'absolute_url' in attrs:
             del(new_class.base_fields['absolute_url'])
 
@@ -2130,7 +2143,15 @@ class BaseModelResource(Resource):
             field_object = self.fields[identifier]
 
             # Skip readonly or related fields.
-            if field_object.readonly is True or getattr(field_object, 'is_related', False):
+            if bundle.request.method == 'POST':
+                readonly = field_object.readonly_post
+            elif bundle.request.method == 'PATCH':
+                readonly = field_object.readonly_patch
+            else:
+                raise RuntimeError("lookup_kwargs_with_identifiers() was "
+                        "called on a request that is not POST or PATCH; "
+                        "This should never happen.")
+            if readonly is True or getattr(field_object, 'is_related', False):
                 continue
 
             # Check for an optional method to do further hydration.
@@ -2281,7 +2302,15 @@ class BaseModelResource(Resource):
             if not field_object.attribute:
                 continue
 
-            if field_object.readonly:
+            if bundle.request.method == 'POST':
+                readonly = field_object.readonly_post
+            elif bundle.request.method == 'PATCH':
+                readonly = field_object.readonly_patch
+            else:
+                raise RuntimeError("save_related() called on a "
+                        "request that is niether POST or PATCH; "
+                        "This should never happen.")
+            if readonly:
                 continue
 
             if field_object.blank and not field_name in bundle.data:
@@ -2347,7 +2376,15 @@ class BaseModelResource(Resource):
             if not field_object.attribute:
                 continue
 
-            if field_object.readonly:
+            if bundle.request.method == 'POST':
+                readonly = field_object.readonly_post
+            elif bundle.request.method == 'PATCH':
+                readonly = field_object.readonly_patch
+            else:
+                raise RuntimeError("save_m2m() called on a "
+                        "request that is niether POST or PATCH; "
+                        "This should never happen.")
+            if readonly:
                 continue
 
             # Get the manager.
