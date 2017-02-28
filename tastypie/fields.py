@@ -51,8 +51,8 @@ class ApiField(object):
         Optionally accepts a ``blank``, which indicated whether or not
         data may be omitted on the field. Defaults to ``False``.
 
-        Optionally accepts a ``readonly_post`` and ``readonly_patch``, 
-        which indicates whether the field is used during the ``hydrate`` 
+        Optionally accepts a ``readonly_post`` and ``readonly_patch``,
+        which indicates whether the field is used during the ``hydrate``
         or not. Defaults to ``True``.
 
         Optionally accepts a ``unique``, which indicates if the field is a
@@ -445,8 +445,8 @@ class RelatedField(ApiField):
         Optionally accepts a ``blank``, which indicated whether or not
         data may be omitted on the field. Defaults to ``False``.
 
-        Optionally accepts a ``readonly_post`` and ``readonly_patch``, 
-        which indicates whether the field is used during the ``hydrate`` 
+        Optionally accepts a ``readonly_post`` and ``readonly_patch``,
+        which indicates whether the field is used during the ``hydrate``
         or not. Defaults to ``True``.
 
         Optionally accepts a ``full``, which indicates how the related
@@ -734,19 +734,19 @@ class ToOneField(RelatedField):
                     foreign_obj = getattr(foreign_obj, attr, None)
                 except ObjectDoesNotExist:
                     foreign_obj = None
-        
+
         elif callable(self.attribute):
             previous_obj = bundle.obj
             foreign_obj = self.attribute(bundle)
-            
+
         if not foreign_obj:
             if not self.null:
                 if callable(self.attribute):
                     raise ApiFieldError("The related resource for resource %s could not be found." % (previous_obj))
                 else:
                     raise ApiFieldError("The model '%r' has an empty attribute '%s' and doesn't allow a null value." % (previous_obj, attr))
-            
-            return None        
+
+            return None
 
         self.fk_resource = self.get_related_resource(foreign_obj)
         fk_bundle = Bundle(obj=foreign_obj, request=bundle.request)
@@ -828,7 +828,7 @@ class ToManyField(RelatedField):
 
         if not the_m2ms:
             if not self.null:
-                raise ApiFieldError("The model '%r' has an empty attribute '%s' and doesn't allow a null value." % (previous_obj, attr))
+                raise ApiFieldError("The resource '%s' has an empty attribute '%s' and doesn't allow a null value." % (self.resource_name, self.instance_name))
 
             return []
 
@@ -857,7 +857,7 @@ class ToManyField(RelatedField):
                 return None
         else:
             raise RuntimeError("hydrate() called, but it should only be called "
-                               "if the request is a PATCH or POST.")        
+                               "if the request is a PATCH or POST.")
 
         if bundle.data.get(self.instance_name) is None:
             if self.blank:
